@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Test Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 30px;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .messages {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .message {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .message .sender {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .message .text {
+            color: #333;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #004085;
+            margin-top: 10px;
+        }
+        .current-room {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: #856404;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sockets</h1>
+        <div id="status" class="status disconnected">Disconnected</div>
+        
+        <div class="section">
+            <h2>1️⃣ Join a Room</h2>
+            <div class="input-group">
+                <input type="text" id="roomInput" placeholder="Enter room name (e.g., room-1)" value="room-1">
+                <button onclick="joinRoom()">Join Room</button>
+            </div>
+            <div id="currentRoom" class="current-room" style="display: none;">
+                Current Room: <span id="roomName"></span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2️⃣ Send a Message</h2>
+            <div class="input-group">
+                <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3️⃣ Messages</h2>
+            <div class="messages" id="messages">
+                
+            </div>
+        </div>
+
+        
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        let socket;
+        let currentRoom = null;
+
+        // Connect to Socket.IO server
+        function connectSocket() {
+            socket = io('http://localhost:3000');
+
+            socket.on('connect', () => {
+                console.log(' Connected to server! Socket ID:', socket.id);
+                updateStatus(true);
+                addSystemMessage('Connected to server!');
+            });
+
+            socket.on('disconnect', () => {
+                console.log(' Disconnected from server');
+                updateStatus(false);
+                addSystemMessage('Disconnected from server');
+            });
+
+            socket.on('receiveMessage', (data) => {
+                console.log('📨 Received message:', data);
+                addMessage(data.socketId, data.message);
+            });
+        }
+
+        function updateStatus(connected) {
+            const statusEl = document.getElementById('status');
+            if (connected) {
+                statusEl.textContent = `Connected (ID: ${socket.id})`;
+                statusEl.className = 'status connected';
+            } else {
+                statusEl.textContent = 'Disconnected ';
+                statusEl.className = 'status disconnected';
+            }
+        }
+
+        function joinRoom() {
+            const roomInput = document.getElementById('roomInput');
+            const room = roomInput.value.trim();
+            
+            if (!room) {
+                alert('Please enter a room name!');
+                return;
+            }
+
+            currentRoom = room;
+            socket.emit('joinRoom', room);
+            console.log('🚪 Joined room:', room);
+            
+            document.getElementById('currentRoom').style.display = 'block';
+            document.getElementById('roomName').textContent = room;
+            
+            addSystemMessage(`Joined room: ${room}`);
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+
+            if (!currentRoom) {
+                alert('Please join a room first!');
+                return;
+            }
+
+            if (!message) {
+                alert('Please enter a message!');
+                return;
+            }
+
+            socket.emit('sendMessage', {
+                roomId: currentRoom,
+                message: message
+            });
+
+            console.log('Sent message:', message, 'to room:', currentRoom);
+            
+            // Show own message
+            addMessage('You', message, true);
+            
+            messageInput.value = '';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function addMessage(sender, text, isOwn = false) {
+            const messagesDiv = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+            messageEl.innerHTML = `
+                <div class="sender">${isOwn ? '👤 ' : '👥 '}${sender}</div>
+                <div class="text">${text}</div>
+            `;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addSystemMessage(text) {
+            const messagesDiv = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'info';
+            messageEl.textContent = `ℹ️ ${text}`;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Connect when page loads
+        connectSocket();
+    </script>
+</body>
+</html>
