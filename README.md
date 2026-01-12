@@ -12,6 +12,7 @@ A streamlined system for user authentication and background job management.
 - Full Auth Flow (Signup, Verify Email, Forgot/Reset Password, JWT Refresh)
 - Multi-tenant Background Jobs (Users only see their own jobs)
 - Priority-based Queue (Higher priority numbers process first; defaults to 0)
+- User can add any metadata with the body ( from postman ) frontend only support priority and shoulFalse for prior testin
 - Admin Role (Can view all user jobs via `/admin/all`)
 - Real-time Communication via Socket.io (Separate module)
 - Real-time Polling on Dashboard for job progress monitoring
