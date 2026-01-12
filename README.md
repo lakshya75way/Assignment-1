@@ -1,4 +1,4 @@
-# Task-Authentication-and-Sockets
+# Task-  Simulate async background processing without external services.
 
 A streamlined system for user authentication and background job management.
 
