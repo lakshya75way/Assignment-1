@@ -4,6 +4,7 @@ interface JobFormProps {
   onSubmit: (
     name: string,
     shouldFail: boolean,
+    failOnce: boolean,
     priority: number
   ) => Promise<void>;
 }
@@ -11,6 +12,7 @@ interface JobFormProps {
 const JobForm: React.FC<JobFormProps> = ({ onSubmit }) => {
   const [jobName, setJobName] = useState("");
   const [shouldFail, setShouldFail] = useState(false);
+  const [failOnce, setFailOnce] = useState(false);
   const [priority, setPriority] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -19,9 +21,10 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit }) => {
     if (!jobName.trim()) return;
 
     setIsSubmitting(true);
-    await onSubmit(jobName, shouldFail, priority);
+    await onSubmit(jobName, shouldFail, failOnce, priority);
     setJobName("");
     setShouldFail(false);
+    setFailOnce(false);
     setPriority(0);
     setIsSubmitting(false);
   };
@@ -61,13 +64,24 @@ const JobForm: React.FC<JobFormProps> = ({ onSubmit }) => {
         <div className="checkbox-group">
           <input
             type="checkbox"
+            id="failOnce"
+            checked={failOnce}
+            onChange={(e) => setFailOnce(e.target.checked)}
+            disabled={isSubmitting}
+          />
+          <label htmlFor="failOnce">Fail Once (Test Successful Retry)</label>
+        </div>
+
+        <div className="checkbox-group">
+          <input
+            type="checkbox"
             id="simulateFail"
             checked={shouldFail}
             onChange={(e) => setShouldFail(e.target.checked)}
             disabled={isSubmitting}
           />
           <label htmlFor="simulateFail">
-            Simulate Initial Failure (Test Retry)
+            Permanent Failure (Test Exhaustion)
           </label>
         </div>
 

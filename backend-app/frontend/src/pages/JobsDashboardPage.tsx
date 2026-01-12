@@ -49,10 +49,11 @@ const JobsDashboardPage: React.FC = () => {
   const handleJobSubmit = async (
     name: string,
     shouldFail: boolean,
+    failOnce: boolean,
     priority: number
   ) => {
     try {
-      await submitJob(name, { shouldFail }, priority);
+      await submitJob(name, { shouldFail, failOnce }, priority);
       fetchJobs();
     } catch (error) {
       console.error(error);

@@ -152,7 +152,11 @@ class JobManager {
           return reject(new Error("Simulated permanent failure"));
         }
 
-        if (Math.random() < 0.1) {
+        if (job.data.failOnce === true && job.retries === 0) {
+          return reject(new Error("Simulated temporary failure (will retry)"));
+        }
+
+        if (Math.random() < 0.05) {
           return reject(new Error("Random system fluctuation error"));
         }
 

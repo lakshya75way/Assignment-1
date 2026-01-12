@@ -1,4 +1,4 @@
-# Task-  Simulate async background processing without external services.
+# Task- Simulate async background processing without external services.
 
 A streamlined system for user authentication and background job management.
 
@@ -12,7 +12,7 @@ A streamlined system for user authentication and background job management.
 - Full Auth Flow (Signup, Verify Email, Forgot/Reset Password, JWT Refresh)
 - Multi-tenant Background Jobs (Users only see their own jobs)
 - Priority-based Queue (Higher priority numbers process first; defaults to 0)
-- User can add any metadata with the body ( from postman ) frontend only support priority and shoulFalse for prior testin
+- User can add any metadata with the body (from postman). Frontend supports `priority`, `shouldFail` (Permanent), and `failOnce` (Temporary failure) for testing.
 - Admin Role (Can view all user jobs via `/admin/all`)
 - Real-time Communication via Socket.io (Separate module)
 - Real-time Polling on Dashboard for job progress monitoring
@@ -58,8 +58,9 @@ EMAIL_PASS=your_app_password
 
 1. **User Isolation:** Register two accounts. Jobs created in Account A won't show up in Account B's dashboard.
 2. **Admin Access:** Manually set `role: "admin"` in MongoDB for a user. That user can now access the Admin route to see everyone's jobs.
-3. **Retry Logic:** Submit a job with `shouldFail: true` in metadata. Check terminal/logs to see the automatic retry attempt.
-4. **Priority Check:** Submit 3 standard jobs (priority 0) followed by 1 high-priority job (priority 10). Observe that the priority 10 job jumps to the head of the pending queue.
+3. **Retry Logic:** Use "Fail Once" (Temporary) to see a successful retry, or "Permanent Failure" to see the job fail after exhausting retries.
+4. **Natural Failure:** Even without checkboxes, there is a **5% random chance** of a "System Fluctuation Error" to simulate real-world instability.
+5. **Priority Check:** Submit 3 standard jobs (priority 0) followed by 1 high-priority job (priority 10). Observe that the priority 10 job jumps to the head of the pending queue.
 
 ## 🚀 Setup
 
