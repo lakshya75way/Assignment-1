@@ -148,11 +148,11 @@ class JobManager {
       const delay = job.type === "Fast Task" ? 2000 : 5000;
 
       setTimeout(() => {
-        if (job.data.shouldFail === true && job.retries === 0) {
-          return reject(new Error("Simulated failure based on job metadata"));
+        if (job.data.shouldFail === true) {
+          return reject(new Error("Simulated permanent failure"));
         }
 
-        if (Math.random() < 0.2 && job.retries === 0) {
+        if (Math.random() < 0.1) {
           return reject(new Error("Random system fluctuation error"));
         }
 
