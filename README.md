@@ -58,7 +58,7 @@ EMAIL_PASS=your_app_password
 
 1. **User Isolation:** Register two accounts. Jobs created in Account A won't show up in Account B's dashboard.
 2. **Admin Access:** Manually set `role: "admin"` in MongoDB for a user. That user can now access the Admin route to see everyone's jobs.
-3. **Retry Logic:** Submit a job with `shouldFail: true` in metadata. Check terminal/logs to see the automatic retry attempt.
+3. **Retry Logic:** Submit a job with `shouldFail: true` in metadata. Check terminal/logs to see the automatic retry attempt. (also updated that shouldFalse : true will always fail a job in both try, updated this part after video ( to show better status ))
 4. **Priority Check:** Submit 3 standard jobs (priority 0) followed by 1 high-priority job (priority 10). Observe that the priority 10 job jumps to the head of the pending queue.
 
 ## 🚀 Setup
